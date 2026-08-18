@@ -181,3 +181,19 @@ WHERE order_status = 'delivered'
 GROUP BY olist_sellers.seller_id
 HAVING qtd_pedidos > 20
 ORDER BY tempo_medio_entrega DESC;
+
+-- 13. Frete médio por categoria de produto
+Pergunta: qual o frete médio por categoria de produto, considerando só pedidos entregues?
+Técnicas: JOIN (3 tabelas), AVG, GROUP BY, WHERE, ORDER BY
+-- Observação: diferente das análises anteriores (review e pagamento), aqui não existe fan-out
+-- Cada linha de order_items já representa um item físico com seu próprio frete alocado, não uma informação duplicada por JOIN.
+-- Investiguei isso comparando pedidos com múltiplos itens e confirmando que os valores de frete variam por item, não se repetem artificialmente
+SELECT product_category_name, AVG(freight_value) AS media_do_frete
+FROM olist_order_items
+JOIN olist_products
+	ON olist_products.product_id = olist_order_items.product_id
+JOIN olist_orders
+	ON olist_orders.order_id = olist_order_items.order_id
+WHERE order_status = 'delivered'
+GROUP BY product_category_name
+ORDER BY media_do_frete DESC
